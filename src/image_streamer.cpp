@@ -154,10 +154,13 @@ cv::Mat ImageTransportImageStreamer::decodeImage(
     }
     return float_image;
   } else if(msg->encoding.find("16") != std::string::npos) {
+    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvShare(msg);
     cv::Mat image_8bit;
-    cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::TYPE_16UC1)->image.convertTo(image_8bit, CV_8UC1, 1.0 / 256);
+    cv::normalize(cv_ptr->image, image_8bit, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+
     cv::Mat image_bgr;
     cv::cvtColor(image_8bit, image_bgr, cv::COLOR_GRAY2BGR);
+
     return image_bgr;
   } else {
     // Convert to OpenCV native BGR color
